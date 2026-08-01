@@ -18,7 +18,11 @@ const initDb = async () => {
     const dbName = process.env.DB_NAME || 'excel_validator';
 
     // Create database if not exists
-    await pool.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`);
+    try {
+      await pool.query(`CREATE DATABASE ${dbName}`);
+    } catch (err: any) {
+      if (err.code !== '42P04') throw err; // Ignore "database already exists" error
+    }
     console.log(`✓ Database ${dbName} ready`);
 
     // Connect to the new database
