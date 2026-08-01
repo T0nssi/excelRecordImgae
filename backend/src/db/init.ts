@@ -64,7 +64,6 @@ const initDb = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       )`,
 
-      -- Folder uploads for batch processing
       `CREATE TABLE IF NOT EXISTS folder_uploads (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         folder_name VARCHAR(255) NOT NULL,
@@ -73,7 +72,6 @@ const initDb = async () => {
         uploaded_at TIMESTAMP DEFAULT NOW()
       )`,
 
-      -- Uploads table (enhanced with folder support)
       `CREATE TABLE IF NOT EXISTS uploads (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         template_id UUID REFERENCES templates(id),
@@ -88,7 +86,6 @@ const initDb = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       )`,
 
-      -- File version history and edit log
       `CREATE TABLE IF NOT EXISTS file_history (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         upload_id UUID NOT NULL REFERENCES uploads(id) ON DELETE CASCADE,
