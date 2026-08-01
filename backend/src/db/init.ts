@@ -44,34 +44,62 @@ const initDb = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       )`,
 
-      // Template rules table
       `CREATE TABLE IF NOT EXISTS template_rules (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         template_id UUID NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
-        column_name VARCHAR(255) NOT NULL,
-        column_letter VARCHAR(2) NOT NULL,
-        data_type VARCHAR(50) NOT NULL,
+        rule_type VARCHAR(50) NOT NULL,
+        cell_address VARCHAR(10),
+        column_letter VARCHAR(2),
+        column_name VARCHAR(255),
+        data_type VARCHAR(50),
         required BOOLEAN DEFAULT FALSE,
         min_value NUMERIC,
         max_value NUMERIC,
         max_length INTEGER,
         format VARCHAR(255),
         unique_values BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(template_id, column_letter)
+        start_row INTEGER,
+        end_row INTEGER,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
       )`,
 
-      // Uploads table
+      -- Folder uploads for batch processing
+      `CREATE TABLE IF NOT EXISTS folder_uploads (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        folder_name VARCHAR(255) NOT NULL,
+        folder_path VARCHAR(500) NOT NULL,
+        file_count INTEGER DEFAULT 0,
+        uploaded_at TIMESTAMP DEFAULT NOW()
+      )`,
+
+      -- Uploads table (enhanced with folder support)
       `CREATE TABLE IF NOT EXISTS uploads (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        template_id UUID NOT NULL REFERENCES templates(id),
+        template_id UUID REFERENCES templates(id),
+        folder_upload_id UUID REFERENCES folder_uploads(id),
         filename VARCHAR(255) NOT NULL,
         file_path VARCHAR(500) NOT NULL,
         status VARCHAR(50) DEFAULT 'pending',
         version INTEGER DEFAULT 1,
         cloned_from_id UUID REFERENCES uploads(id),
+        edit_count INTEGER DEFAULT 0,
         uploaded_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
+      )`,
+
+      -- File version history and edit log
+      `CREATE TABLE IF NOT EXISTS file_history (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        upload_id UUID NOT NULL REFERENCES uploads(id) ON DELETE CASCADE,
+        version_number INTEGER NOT NULL,
+        action VARCHAR(50) NOT NULL,
+        previous_file_path VARCHAR(500),
+        current_file_path VARCHAR(500),
+        changes_description TEXT,
+        edited_at TIMESTAMP DEFAULT NOW(),
+        edited_by VARCHAR(255),
+        UNIQUE(upload_id, version_number)
       )`,
 
       // Validation results table
